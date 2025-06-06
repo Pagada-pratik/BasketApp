@@ -15,6 +15,43 @@ class ProductRepository {
     }
   }
 
+  Future<dynamic> getProductsByCategoryIdSortingApiCall(int categoryId, String orderBy, String order) async {
+    try {
+      dynamic response = await apiWooCommerce.httpGetWooCommerceRequest(
+          url: ApiUrl.getProductsByIdEndPoint,
+          queryParams: {'category': '$categoryId',
+            'orderby': '$orderBy',
+            'order': '$order',});
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<dynamic> getCompareProductsApiCall(List<String> productIDs) async {
+    try {
+      dynamic response = await apiWooCommerce.httpGetWooCommerceRequest(
+          url: buildWooCommerceUrl(ApiUrl.getProductsByIdEndPoint, productIDs).toString(),
+          /*queryParams: {
+            'include[]': productIDs,
+          }*/);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Uri buildWooCommerceUrl(String baseUrl, List<String> includeIds) {
+    final uri = Uri.parse(baseUrl);
+    final queryParameters = <String, dynamic>{};
+
+    for (var id in includeIds) {
+      queryParameters.putIfAbsent('include[]', () => []).add(id);
+    }
+
+    return uri.replace(queryParameters: queryParameters);
+  }
+
   Future<dynamic> getProductsByProductIdApiCall(int productId) async {
     try {
       dynamic response = await apiWooCommerce.httpGetWooCommerceRequest(

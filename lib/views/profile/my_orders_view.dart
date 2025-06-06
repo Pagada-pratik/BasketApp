@@ -3,11 +3,16 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/cart/my_orders_controller.dart';
+import '../../controllers/cart/product_cart_controller.dart';
 import '../../controllers/profile_controller.dart';
 import '../../resources/app_colors.dart';
 import '../../resources/constants.dart';
+import '../../routes/routes_name.dart';
+import '../../services/payment_gateway_services.dart';
 import '../../utils/ars_progress_dialog.dart';
 import '../../utils/custom_loading.dart';
+import '../../utils/message_utils.dart';
+import '../checkout/checkout_screen.dart';
 
 class MyOrdersView extends StatefulWidget {
   const MyOrdersView({super.key});
@@ -19,6 +24,10 @@ class MyOrdersView extends StatefulWidget {
 class _MyOrdersViewState extends State<MyOrdersView> {
   MyOrdersController myOrdersController = Get.put(MyOrdersController());
   ProfileController profileController = Get.put(ProfileController());
+
+  PaymentGatewayServices paymentService = PaymentGatewayServices();
+
+  ProductCartController productCartController = Get.put(ProductCartController());
 
   @override
   void initState() {
@@ -34,6 +43,16 @@ class _MyOrdersViewState extends State<MyOrdersView> {
           context, profileController.userId.toString());
       myOrdersController.isDataSuccess.value = true;
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await paymentService.getAccessToken();
+    });
+
+    productCartController.progressDialog = ArsProgressDialog(
+      context,
+      dismissable: false,
+      loadingWidget: const CustomLoading(),
+    );
   }
 
   @override
@@ -69,135 +88,217 @@ class _MyOrdersViewState extends State<MyOrdersView> {
               itemCount: myOrdersController.orders.length,
               itemBuilder: (context, index) {
                 final order = myOrdersController.orders[index];
-                return Padding(
-                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                  child: Card(
-                    elevation: 0,
-                    margin: EdgeInsets.zero,
-                    color: AppColors.whiteColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          AppConstants.defaultBorderRadius),
-                      side: const BorderSide(
-                          width: 1, color: AppColors.blackColor),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Order ID: #${order.id}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(),
-                          ),
-                          Text(
-                            "Payment: ${order.paymentMethodTitle}",
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(
-                              height: AppConstants.defaultBorderRadius),
-                          Text(
-                            "Status:",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(),
-                          ),
-                          const SizedBox(
-                              height: AppConstants.defaultBorderRadius),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildProgressStep("On Hold",
-                                  order.status == 'on-hold' ? 'on-hold' : ''),
-                              _buildProgressStep(
-                                  "Processing",
-                                  order.status == 'processing'
-                                      ? 'processing'
-                                      : ''),
-                              _buildProgressStep(
-                                  "Completed",
-                                  order.status == 'completed'
-                                      ? 'completed'
-                                      : ''),
-                              _buildProgressStep(
-                                  "Cancelled",
-                                  order.status == 'cancelled'
-                                      ? 'cancelled'
-                                      : ''),
-                            ],
-                          ),
-                          const SizedBox(
-                              height: AppConstants.defaultBorderRadius),
-                          Text(
-                            "Items Details:",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...order.lineItems.map((item) {
-                                return SizedBox(
-                                  width: double.infinity,
-                                  child: Card(
-                                    elevation: 0,
-                                    color: AppColors.greyColor10,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          AppConstants.defaultBorderRadius),
-                                      side: const BorderSide(
-                                          width: 1,
-                                          color: AppColors.greyColor20),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(
-                                          AppConstants.defaultBorderRadius),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text("Product:- ${item.name}",
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium),
-                                          const SizedBox(height: 2),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                  "x${item.quantity} Quantity"),
-                                              Text("Price: €${item.total}"),
-                                            ],
-                                          ),
-                                        ],
+                return GestureDetector(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                    child: Card(
+                      elevation: 0,
+                      margin: EdgeInsets.zero,
+                      color: AppColors.whiteColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            AppConstants.defaultBorderRadius),
+                        side: const BorderSide(
+                            width: 1, color: AppColors.blackColor),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Order ID: #${order.id}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(),
+                            ),
+                            Text(
+                              "Payment: ${order.paymentMethodTitle}",
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(
+                                height: AppConstants.defaultBorderRadius),
+                            Text(
+                              "Status:",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(),
+                            ),
+                            const SizedBox(
+                                height: AppConstants.defaultBorderRadius),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                _buildProgressStep("On Hold",
+                                    order.status == 'on-hold' ? 'on-hold' : ''),
+                                _buildProgressStep(
+                                    "Processing",
+                                    order.status == 'processing'
+                                        ? 'processing'
+                                        : ''),
+                                _buildProgressStep(
+                                    "Completed",
+                                    order.status == 'completed'
+                                        ? 'completed'
+                                        : ''),
+                                _buildProgressStep(
+                                    "Cancelled",
+                                    order.status == 'cancelled'
+                                        ? 'cancelled'
+                                        : ''),
+                              ],
+                            ),
+                            const SizedBox(
+                                height: AppConstants.defaultBorderRadius),
+                            Text(
+                              "Items Details:",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ...order.lineItems.map((item) {
+                                  return SizedBox(
+                                    width: double.infinity,
+                                    child: Card(
+                                      elevation: 0,
+                                      color: AppColors.greyColor10,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            AppConstants.defaultBorderRadius),
+                                        side: const BorderSide(
+                                            width: 1,
+                                            color: AppColors.greyColor20),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(
+                                            AppConstants.defaultBorderRadius),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text("Product:- ${item.name}",
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium),
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                    "x${item.quantity} Quantity"),
+                                                Text("Price: €${item.total}"),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                          const Divider(
-                              height: 30, color: AppColors.blackColor),
-                          _buildSummaryRow(
-                            'Total Amount:',
-                            '€${(order.total)}',
-                            valueStyle: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryAppColor,
-                                fontSize: 16),
-                          ),
-                        ],
+                                  );
+                                }),
+                              ],
+                            ),
+                            const Divider(
+                                height: 30, color: AppColors.blackColor),
+                            _buildSummaryRow(
+                              'Total Amount:',
+                              '€${(order.total)}',
+                              valueStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primaryAppColor,
+                                  fontSize: 16),
+                            ),
+                            if(order.status == 'completed' || order.status == 'pending')
+                            const Divider(
+                                height: 30, color: AppColors.blackColor),
+                            if(order.status == 'pending')
+                            Padding(
+                              padding: const EdgeInsets.all(0),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  String? orderCode = await paymentService.createOrder(
+                                      double.parse(order.total) -
+                                          double.parse(order.discountTotal));
+                                  if (orderCode != null) {
+                                      Get.to(() => CheckoutScreen(
+                                        orderCode: orderCode, myOrderId: order.id.toString(),
+                                      ));
+                                  } else {
+                                    MessageUtils.flushBarErrorMessage(
+                                      "Payment order id issue.",
+                                      context,
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  "Pay",
+                                  style: TextStyle(fontSize: AppConstants.defaultFontSize),
+                                ),
+                              ),
+                            ),
+                            if(order.status == 'completed')
+                            Padding(
+                              padding: const EdgeInsets.all(0),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                    // for (var item in order.lineItems) {
+                                  for (int i = 0; i < order.lineItems.length; i++) {
+                                    var item = order.lineItems[i];
+                                    bool isLast = i == order.lineItems.length - 1;
+                                      await productCartController
+                                          .addProductToCartApiOrderAgainResponse(
+                                          item.productId
+                                              .toString(),
+                                          item.quantity
+                                              .toString(), context, isLast);
+                                    }
+                                },
+                                child: const Text(
+                                  "Order again",
+                                  style: TextStyle(fontSize: AppConstants.defaultFontSize),
+                                ),
+                              ),
+                            ),
+                            if(order.status == 'completed')
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0,15,0,0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    RoutesName.orderComplaintScreen,
+                                    arguments: {
+                                      'orderId': order.id,
+                                      'productId': order.lineItems.first.productId,
+                                    },
+                                  );
+                                },
+                                child: const Text(
+                                  "Complaint",
+                                  style: TextStyle(fontSize: AppConstants.defaultFontSize),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      RoutesName.myOrderDetailsScreen,
+                      arguments: {
+                        'order': order,
+                      },
+                    );
+                  },
                 );
               },
             )

@@ -4,6 +4,9 @@ import 'package:mybasket247/components/custom_modal_bottom_sheet.dart';
 import 'package:mybasket247/views/checkout/components/remove_to_cart.dart';
 
 import '../../controllers/cart/product_cart_controller.dart';
+import '../../controllers/profile_controller.dart';
+import '../../controllers/user_controller.dart';
+import '../../models/product_guest_model.dart';
 import '../../resources/app_colors.dart';
 import '../../resources/constants.dart';
 import '../../views/checkout/components/cart_product_quantity.dart';
@@ -40,8 +43,10 @@ class SecondaryProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ProductCartController productCartController =
-        Get.put(ProductCartController());
+    ProductCartController productCartController = Get.put(ProductCartController());
+    ProfileController profileController = Get.put(ProfileController());
+    UserController userController = Get.put(UserController());
+
     RxInt cartQuantityCount = quantity.obs;
     return OutlinedButton(
       onPressed: press,
@@ -152,29 +157,41 @@ class SecondaryProductCard extends StatelessWidget {
                               numOfItem: cartQuantityCount.value,
                               onIncrement: () async {
                                 if (cartQuantityCount.value < maxPurchase) {
-                                  cartQuantityCount.value++;
+                                  if(profileController.userId.isNotEmpty ) {
+                                    cartQuantityCount.value++;
 
-                                  await productCartController
-                                      .updateProductInCartApiResponse(
-                                          itemKey,
-                                          cartQuantityCount.value.toString(),
-                                          context);
+                                    await productCartController
+                                        .updateProductInCartApiResponse(
+                                        itemKey,
+                                        cartQuantityCount.value.toString(),
+                                        context);
+                                  } else {
+                                    cartQuantityCount.value++;
+                                    await userController.addProductToList(ProductGuestModel(id: productId.toString(), quantity: 1));
+                                    await productCartController.getGuestProductDataApiResponse(context);
+                                  }
                                 }
                               },
                               onDecrement: () async {
                                 if (cartQuantityCount.value != 1) {
-                                  cartQuantityCount.value--;
-                                  await productCartController
-                                      .updateProductInCartApiResponse(
-                                          itemKey,
-                                          cartQuantityCount.value.toString(),
-                                          context);
+                                  if(profileController.userId.isNotEmpty ) {
+                                    cartQuantityCount.value--;
+                                    await productCartController
+                                        .updateProductInCartApiResponse(
+                                        itemKey,
+                                        cartQuantityCount.value.toString(),
+                                        context);
+                                  } else {
+                                    cartQuantityCount.value--;
+                                    await userController.removeProductFromList(ProductGuestModel(id: productId.toString(), quantity: 1));
+                                    await productCartController.getGuestProductDataApiResponse(context);
+                                  }
                                 } else {
                                   customModalBottomSheet(
                                     context,
                                     isDismissible: true,
                                     height: Get.height * 0.15,
-                                    child: RemoveToCart(itemKey: itemKey),
+                                    child: RemoveToCart(itemKey: itemKey, productId: productId, userIdFlag: profileController.userId.isNotEmpty),
                                   );
                                 }
                               },

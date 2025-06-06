@@ -3,11 +3,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import '../../components/cart_button.dart';
+import '../../components/custom_modal_bottom_sheet.dart';
 import '../../components/network_image_with_loader.dart';
 import '../../controllers/cart/product_cart_controller.dart';
 import '../../controllers/product/product_details_controller.dart';
 import '../../controllers/profile_controller.dart';
+import '../../controllers/user_controller.dart';
 import '../../controllers/wishlist/wishlist_controller.dart';
+import '../../models/product_guest_model.dart';
 import '../../resources/app_colors.dart';
 import '../../resources/constants.dart';
 import '../../resources/product_colors.dart';
@@ -16,6 +19,7 @@ import '../../routes/routes_name.dart';
 import '../../utils/ars_progress_dialog.dart';
 import '../../utils/custom_loading.dart';
 import '../../utils/parse_values.dart';
+import 'added_to_cart_message_view.dart';
 import 'components/product_list_tile.dart';
 import 'components/product_quantity.dart';
 import 'components/selected_colors.dart';
@@ -35,6 +39,7 @@ class _ProductBuyNowViewState extends State<ProductBuyNowView> {
   ProfileController profileController = Get.put(ProfileController());
   WishlistController wishlistController = Get.put(WishlistController());
   ProductCartController productCartController = Get.put(ProductCartController());
+  UserController userController = Get.put(UserController());
 
   @override
   void initState() {
@@ -57,7 +62,20 @@ class _ProductBuyNowViewState extends State<ProductBuyNowView> {
         title: "Add to cart",
         subTitle: "Total price",
         press: () async {
-          await productCartController.addProductToCartApiResponse(widget.productData[0]['id'].toString(), productDetailsController.quantityCount.value.toString(), context);
+          if(profileController.userId.isEmpty){
+            await { userController.addProductToList(ProductGuestModel(id: widget.productData[0]['id'].toString(), quantity: productDetailsController.quantityCount.value)),
+              customModalBottomSheet(
+                context,
+                isDismissible: false,
+                child: const AddedToCartMessageView(),
+                )
+            };
+          } else {
+            await productCartController.addProductToCartApiResponse(
+                widget.productData[0]['id'].toString(),
+                productDetailsController.quantityCount.value.toString(),
+                context);
+          }
         },
       )),
       body: Column(

@@ -23,6 +23,15 @@ class AuthRepository {
     }
   }
 
+  Future<dynamic> forgotApiCall(Map<String, dynamic> params) async {
+    try {
+      dynamic response = await apiServices.httpPostRequest(url: ApiUrl.forgotEndPoint, parameters: params);
+      return response;
+    } catch(e) {
+      rethrow;
+    }
+  }
+
   Future<dynamic> getCurrentUserApiCall() async {
     try {
       dynamic response = await apiServices.httpGetRequest(url: ApiUrl.getCurrentUserEndPoint, isTokenRequire: true);

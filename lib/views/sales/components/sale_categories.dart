@@ -55,6 +55,7 @@ class _SaleCategoriesState extends State<SaleCategories> {
                 isActive: index == salesViewController.currentIndex.value,
                 press: () async {
                   salesViewController.currentIndex.value = index;
+                  salesViewController.dropdownvalue.value = 'Default sorting';
                   await salesViewController.salesProductsApiResponse(context, widget.subCategory[index].id);
                 },
               ),

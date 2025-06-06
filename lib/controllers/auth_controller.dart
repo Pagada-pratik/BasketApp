@@ -25,6 +25,8 @@ class AuthController extends GetxController {
   var registerPasswordController = TextEditingController().obs;
   RxBool isUserCustomer = true.obs;
 
+  var forgotEmailController = TextEditingController().obs;
+
   void showHidePasswordForLogin(bool value) {
     isObscureForLogin.value = value;
   }
@@ -103,6 +105,29 @@ class AuthController extends GetxController {
         profileController.displayUserData(context, false);
       });
     }).onError((error, stackTrace) {
+      progressDialog.dismiss();
+      MessageUtils.flushBarErrorMessage(error.toString(), context);
+    });
+  }
+
+  Future<void> forgotApiResponse(String email, BuildContext context) async {
+    progressDialog.show();
+    final params = {
+      "email": email,
+    };
+    myRepo.forgotApiCall(params).then((value) {
+      progressDialog.dismiss();
+      Get.back();
+      MessageUtils.flushBarErrorMessage("We've sent a password reset link to your email address.", context);
+    })/*.then((_) {
+      myRepo.getCurrentUserApiCall().then((value) {
+        progressDialog.dismiss();
+        Get.back();
+        Get.back();
+        MessageUtils.flushBarErrorMessage("We've sent a password reset link to your email address.", context);
+        profileController.displayUserData(context, false);
+      });
+    })*/.onError((error, stackTrace) {
       progressDialog.dismiss();
       MessageUtils.flushBarErrorMessage(error.toString(), context);
     });

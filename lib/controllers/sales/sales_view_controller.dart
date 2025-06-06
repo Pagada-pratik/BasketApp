@@ -13,11 +13,44 @@ class SalesViewController extends GetxController {
   List<ProductModel> categoriesBaseSalesProducts = <ProductModel>[].obs;
   RxInt currentIndex = 0.obs;
   RxBool isProductNotFound = false.obs;
+  // RxString dropdownvalue = 'Default sorting'.obs;
+  var dropdownvalue = 'Default sorting'.obs;
+  // List of items in our dropdown menu
+  List<String> items = [
+    'Default sorting',
+    'Sort By Popularity',
+    'Sort By Latest',
+    'Price Low to High',
+    'Price High to Low',
+  ];
 
   Future<void> salesProductsApiResponse(BuildContext context, int categoryId) async {
     isProductNotFound.value = false;
     categoriesBaseSalesProducts.clear();
     myProductRepo.getProductsByCategoryIdApiCall(categoryId).then((value) {
+      categoriesBaseSalesProducts.assignAll(value.map<ProductModel>((item) {
+        return ProductModel(
+          productId: item['id'],
+          categoryId: item['categories'][0]['id'],
+          image: item['images'][0]['src'],
+          title: item['name'],
+          brandName: "SKU: ${item['sku']}",
+          price: ParseValues.parsePrice(item['price']),
+          // discountPercent: 20,
+        );
+      }).toList());
+      if (categoriesBaseSalesProducts.isEmpty) {
+        isProductNotFound.value = true;
+      }
+    }).onError((error, stackTrace) {
+      MessageUtils.flushBarErrorMessage(error.toString(), context);
+    });
+  }
+
+  Future<void> salesProductsSortingApiResponse(BuildContext context, int categoryId, String orderBy, String order) async {
+    isProductNotFound.value = false;
+    categoriesBaseSalesProducts.clear();
+    myProductRepo.getProductsByCategoryIdSortingApiCall(categoryId, orderBy, order).then((value) {
       categoriesBaseSalesProducts.assignAll(value.map<ProductModel>((item) {
         return ProductModel(
           productId: item['id'],

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mybasket247/controllers/user_controller.dart';
 import '../../../controllers/cart/product_cart_controller.dart';
+import '../../../models/product_guest_model.dart';
 import '../../../resources/constants.dart';
 
 class RemoveToCart extends StatelessWidget {
   final String itemKey;
-  const RemoveToCart({super.key, required this.itemKey});
+  final int productId;
+  final bool userIdFlag;
+  const RemoveToCart({super.key, required this.itemKey, required int this.productId, required bool this.userIdFlag});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,14 @@ class RemoveToCart extends StatelessWidget {
               const Spacer(),
               ElevatedButton(
                 onPressed: () async {
-                  await productCartController.removeProductFromCartApiResponse(itemKey, context);
+                  if(userIdFlag) {
+                    await productCartController
+                        .removeProductFromCartApiResponse(itemKey, context);
+                  } else {
+                    await UserController().removeProductFromList(ProductGuestModel(id: productId.toString(), quantity: 1));
+                    Navigator.pop(context);
+                    await productCartController.getGuestProductDataApiResponse(context);
+                  }
                 },
                 child: const Text("Remove from cart"),
               ),

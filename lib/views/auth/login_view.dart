@@ -69,7 +69,9 @@ class _LoginViewState extends State<LoginView> {
                   Align(
                     child: TextButton(
                       child: const Text("Forgot your password?"),
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, RoutesName.forgotScreen);
+                      },
                     ),
                   ),
                   const SizedBox(height: AppConstants.defaultPadding * 3),

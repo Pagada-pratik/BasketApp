@@ -28,6 +28,20 @@ class ProfileRepository {
     }
   }
 
+  Future<dynamic> changePasswordApiCall(
+      Map<String, dynamic> params, String userId) async {
+    try {
+      dynamic response = await apiServices.httpPostRequest(
+          // url: '${ApiUrl.changePasswordEndPoint}/$userId',
+          url: ApiUrl.changePasswordEndPoint,
+          isTokenRequire: true,
+          parameters: params);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<dynamic> updateUserAddressApiCall(
       Map<String, dynamic> params, String userId) async {
     try {

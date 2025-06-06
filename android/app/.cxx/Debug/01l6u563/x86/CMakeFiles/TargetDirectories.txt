@@ -1,0 +1,2 @@
+H:/PratikProject/BasketApp/BasketApp/android/app/.cxx/Debug/01l6u563/x86/CMakeFiles/edit_cache.dir
+H:/PratikProject/BasketApp/BasketApp/android/app/.cxx/Debug/01l6u563/x86/CMakeFiles/rebuild_cache.dir

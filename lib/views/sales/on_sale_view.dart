@@ -7,6 +7,7 @@ import '../../components/skeleton/product/wishlist_skeleton.dart';
 import '../../controllers/sales/sales_view_controller.dart';
 import '../../resources/constants.dart';
 import '../../routes/routes_name.dart';
+import '../../utils/message_utils.dart';
 import '../entry_point_view.dart';
 import 'components/sale_offer_and_categories.dart';
 
@@ -25,6 +26,17 @@ class OnSaleView extends StatefulWidget {
 class _OnSaleViewState extends State<OnSaleView> {
   SalesViewController salesViewController = Get.put(SalesViewController());
   bool isCategoryId = false;
+
+  // String dropdownvalue = 'Default sorting';
+  /*var dropdownvalue = 'Default sorting'.obs;
+  // List of items in our dropdown menu
+  List<String> items = [
+    'Default sorting',
+    'Sort By Popularity',
+    'Sort By Latest',
+    'Price Low to High',
+    'Price High to Low',
+  ];*/
 
   @override
   void initState() {
@@ -92,9 +104,68 @@ class _OnSaleViewState extends State<OnSaleView> {
             SliverPadding(
               padding: const EdgeInsets.all(AppConstants.defaultPadding),
               sliver: SliverToBoxAdapter(
-                child: Text(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text(
                   "On Sale Products",
-                  style: Theme.of(context).textTheme.titleSmall,
+                  style: Theme.of(context).textTheme.titleSmall),
+                    Obx(() => DropdownButton<String>(
+                      value: salesViewController.dropdownvalue.value,
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      items: salesViewController.items.map((String item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(item, style: Theme.of(context).textTheme.titleSmall),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          salesViewController.dropdownvalue.value = newValue;
+
+                          /*String id = newValue + " : " +
+                              widget.categoryId.toString() + " - " +
+                              widget.subCategory[salesViewController.currentIndex.value].id.toString();
+                          MessageUtils.flushBarErrorMessage(widget.subCategory[salesViewController.currentIndex.value].id.toString(), context);*/
+
+                          String orderBy = "";
+                          String order = "";
+
+                          if (newValue == "Sort By Popularity") {
+                            orderBy = "popularity";
+                            order = "asc";
+                          } else if (newValue == "Sort By Latest") {
+                            orderBy = "date";
+                            order = "asc";
+                          } else if (newValue == "Price Low to High") {
+                            orderBy = "price";
+                            order = "asc";
+                          } else if (newValue == "Price High to Low") {
+                            orderBy = "price";
+                            order = "desc";
+                          }
+
+                          if (newValue == "Default sorting") {
+                            salesViewController.salesProductsApiResponse(
+                              context,
+                              isCategoryId
+                                  ? widget.categoryId
+                                  : widget.subCategory[salesViewController.currentIndex.value].id,
+                            );
+                          } else {
+                            salesViewController.salesProductsSortingApiResponse(
+                              context,
+                              isCategoryId
+                                  ? widget.categoryId
+                                  : widget.subCategory[salesViewController.currentIndex.value].id,
+                              orderBy,
+                              order,
+                            );
+                          }
+                        }
+                      },
+                    ))
+                  ],
                 ),
               ),
             ),

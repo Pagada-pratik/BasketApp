@@ -99,18 +99,17 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                   price: ParseValues.parsePrice(productData[0]['price']),
                   press: () {
 
-                    if(profileController.userId.isEmpty) {
+                    /*if(profileController.userId.isEmpty) {
                       MessageUtils.flushBarErrorMessage('Login required!', context);
                       return;
-                    }
+                    }*/
 
                     customModalBottomSheet(
                       context,
                       height: MediaQuery.of(context).size.height * 0.92,
                       child: ProductBuyNowView(
                           productData: productData,
-                          isProductInCart:
-                              productCartController.isProductInCart.value),
+                          isProductInCart: productCartController.isProductInCart.value),
                     );
                   },
                 )
@@ -144,6 +143,27 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     floating: true,
                     actions: [
+                      IconButton(
+                        onPressed: () {
+                          /*if(profileController.userId.isEmpty) {
+                            MessageUtils.flushBarErrorMessage('Login required!', context);
+                            return;
+                          }*/
+                          // Navigator.pushNamed(context, RoutesName.compareProductsScreen);
+                          Navigator.pushNamed(
+                            context,
+                            RoutesName.compareProductsScreen,
+                            arguments: {
+                              'productId': widget.productId,
+                            },
+                          );
+                        },
+                        icon: SvgPicture.asset(
+                        "assets/icons/compare.svg",
+                        height: 24,
+                        color: Theme.of(context).iconTheme.color!.withOpacity(0.7),
+                        ),
+                      ),
                       IconButton(
                         onPressed: () {
 

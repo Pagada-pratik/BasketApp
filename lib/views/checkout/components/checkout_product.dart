@@ -19,7 +19,7 @@ class CheckoutProduct extends StatefulWidget {
 }
 
 class _CheckoutProductState extends State<CheckoutProduct> {
-  RxDouble couponCodeAmount = (-1.0).obs;
+  // RxDouble couponCodeAmount = (-1.0).obs;
 
   CouponsController couponsController = Get.put(CouponsController());
 
@@ -66,14 +66,15 @@ class _CheckoutProductState extends State<CheckoutProduct> {
                         textInputAction: TextInputAction.done,
                         keyboardType: TextInputType.text,
                         cursorColor: AppColors.primaryAppColor,
-                        enabled: couponCodeAmount.value == -1.0,
-                        onChanged: (text) {
+                        // enabled: couponsController.couponCodeAmount.value == -1.0,
+                        enabled: productCartController.isButtonShow.value,
+                        /*onChanged: (text) {
                           if (text.length > 2) {
                             productCartController.isButtonShow.value = true;
                           } else {
                             productCartController.isButtonShow.value = false;
                           }
-                        },
+                        },*/
                         decoration: InputDecoration(
                           hintText: "Enter coupon code...",
                           prefixIcon: Padding(
@@ -96,16 +97,17 @@ class _CheckoutProductState extends State<CheckoutProduct> {
                         ),
                       ),
                     ),
-                    if (couponCodeAmount.value != -1.0)
+                    // if (couponsController.couponCodeAmount.value != -1.0)
+                    if (!productCartController.isButtonShow.value)
                       Container(
                         margin: EdgeInsets.all(5),
                         child: InkWell(
                           onTap: () {
-                            couponsController
-                                .removeCouponCode(couponCodeAmount.value);
-                            couponCodeAmount.value = -1.0;
-                            productCartController.couponController.value
-                                .clear();
+                            // couponsController.removeCouponCode(couponsController.couponCodeAmount.value);
+                            couponsController.removeCouponCode(0.0);
+                            // couponsController.couponCodeAmount.value = -1.0;
+                            productCartController.couponController.value.clear();
+                            productCartController.isButtonShow.value = true;
                           },
                           child: const Icon(
                             Icons.delete_outline,
@@ -120,15 +122,12 @@ class _CheckoutProductState extends State<CheckoutProduct> {
                           const SizedBox(height: AppConstants.defaultPadding),
                           OutlinedButton(
                             onPressed: () async {
-                              String couponCode = productCartController
-                                  .couponController.value.text
-                                  .trim();
+                              String couponCode = productCartController.couponController.value.text.trim();
                               if (couponCode.isNotEmpty) {
                                 double? couponCodeAmountValue =
-                                    await couponsController.validateCoupon(
-                                        context, couponCode);
-                                if (couponCodeAmountValue != null) {}
-                                couponCodeAmount.value = couponCodeAmountValue!;
+                                    await couponsController.validateCoupon(context, couponCode);
+                                // if (couponCodeAmountValue != null) {}
+                                // couponCodeAmount.value = couponCodeAmountValue!;
                               } else {
                                 Get.snackbar(
                                   "Error",
@@ -170,7 +169,7 @@ class _CheckoutProductState extends State<CheckoutProduct> {
                             const SizedBox(height: AppConstants.defaultPadding),
                             _buildSummaryRow(
                               'Subtotal',
-                              '€${productCartController.subtotal.value.toStringAsFixed(1)}',
+                              '€${productCartController.subtotal.value.toStringAsFixed(2)}',
                               valueStyle: const TextStyle(
                                   color: AppColors.blackColor, fontSize: 16),
                             ),
@@ -186,7 +185,7 @@ class _CheckoutProductState extends State<CheckoutProduct> {
                             const SizedBox(height: 8),
                             _buildSummaryRow(
                               'Discount',
-                              '- €${productCartController.discountTotal.value.toStringAsFixed(1)}',
+                              '- €${productCartController.discountTotal.value.toStringAsFixed(2)}',
                               valueStyle: const TextStyle(
                                   color: AppColors.blackColor, fontSize: 16),
                             ),

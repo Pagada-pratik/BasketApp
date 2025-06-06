@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mybasket247/views/auth/forgot_view.dart';
+import 'package:mybasket247/views/compare/compare_products.dart';
+import 'package:mybasket247/views/profile/change_pw.dart';
+import 'package:mybasket247/views/profile/my_order_details_view.dart';
+import 'package:mybasket247/views/profile/order_complaint_view.dart';
 import '../models/category_model.dart';
+import '../models/my_order_model.dart';
 import '../views/auth/login_view.dart';
 import '../views/auth/register_view.dart';
 import '../views/categories/categories_view.dart';
@@ -35,6 +41,9 @@ class Routes {
       case RoutesName.loginScreen:
         return MaterialPageRoute(builder: (BuildContext context) => const LoginView());
 
+      case RoutesName.forgotScreen:
+        return MaterialPageRoute(builder: (BuildContext context) => const ForgotView());
+
       case RoutesName.registerScreen:
         return MaterialPageRoute(builder: (BuildContext context) => const RegisterView());
 
@@ -68,8 +77,41 @@ class Routes {
       case RoutesName.myOrdersScreen:
         return MaterialPageRoute(builder: (BuildContext context) => const MyOrdersView());
 
+      case RoutesName.myOrderDetailsScreen:
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final OrderModel order = args['order'] ?? 0;
+        return MaterialPageRoute(
+          builder: (BuildContext context) => MyOrderDetailsView(
+              order: order
+          ),
+        );
+
+      case RoutesName.orderComplaintScreen:
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final int orderId = args['orderId'] ?? 0;
+        final int productId = args['productId'] ?? 0;
+        return MaterialPageRoute(
+          builder: (BuildContext context) => OrderComplaintView(
+            orderId: orderId,
+            productId: productId,
+          ),
+        );
+
+      case RoutesName.changePwScreen:
+        return MaterialPageRoute(builder: (BuildContext context) => const ChangePwView());
+
       case RoutesName.profileDetailsScreen:
         return MaterialPageRoute(builder: (BuildContext context) => ProfileDetailsView());
+
+      case RoutesName.compareProductsScreen:
+        // return MaterialPageRoute(builder: (BuildContext context) => const CompareProductsView());
+        final args = settings.arguments as Map<String, dynamic>? ?? {};
+        final int productId = args['productId'] ?? 0;
+        return MaterialPageRoute(
+          builder: (BuildContext context) => CompareProductsView(
+            productId: productId,
+          ),
+        );
 
       case RoutesName.profileUpdateScreen:
         return MaterialPageRoute(builder: (BuildContext context) => const ProfileUpdateView());

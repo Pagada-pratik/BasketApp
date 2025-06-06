@@ -11,8 +11,9 @@ import '../../resources/constants.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final String orderCode;
+  final String myOrderId;
 
-  const CheckoutScreen({required this.orderCode, super.key});
+  const CheckoutScreen({required this.orderCode, required this.myOrderId, super.key});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -42,10 +43,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Payment Successful')),
               );
-              orderPaymentsController.createOrderApiResponse(
-                setPaid: true,
-                context: context,
-              );
+              if(widget.myOrderId.isNotEmpty){
+                orderPaymentsController.updateOrderApiResponse(
+                  myOrderId: widget.myOrderId,
+                  context: context,
+                );
+              } else {
+                orderPaymentsController.createOrderApiResponse(
+                  setPaid: true,
+                  context: context,
+                );
+              }
               print("Payment Success Detected");
               // Navigate or update state
             } else if (request.url.contains("fail")) {
@@ -53,10 +61,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Payment Failed')),
               );
-              orderPaymentsController.createOrderApiResponse(
-                setPaid: false,
-                context: context,
-              );
+              if(widget.myOrderId.isNotEmpty){
+
+              }else{
+                orderPaymentsController.createOrderApiResponse(
+                  setPaid: false,
+                  context: context,
+                );
+              }
               print("Payment Failure Detected");
               // Navigate or update state
             }

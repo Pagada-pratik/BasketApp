@@ -218,6 +218,33 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     ListTile(
                       onTap: () {
+                        Navigator.pushNamed(context, RoutesName.changePwScreen);
+                      },
+                      minLeadingWidth: 24,
+                      leading: SvgPicture.asset(
+                        "assets/icons/reset_password.svg",
+                        height: 24,
+                        width: 24,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.whileColor20,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      title: const Text(
+                        "Change Password",
+                        style: TextStyle(
+                            color: AppColors.blackColor,
+                            fontSize: 14,
+                            height: 1),
+                      ),
+                      trailing: SvgPicture.asset(
+                        "assets/icons/miniRight.svg",
+                        colorFilter: const ColorFilter.mode(
+                            AppColors.blackColor40, BlendMode.srcIn),
+                      ),
+                    ),
+                    ListTile(
+                      onTap: () {
                         profileController.logOutProcess(context);
                       },
                       minLeadingWidth: 24,

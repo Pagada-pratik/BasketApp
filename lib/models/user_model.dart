@@ -41,3 +41,19 @@ class CurrentUserModel {
     return data;
   }
 }
+
+class ForgotModel {
+  String? userEmail;
+
+  ForgotModel({ this.userEmail});
+
+  ForgotModel.fromJson(Map<String, dynamic> json) {
+    userEmail = json['email'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['email'] = userEmail;
+    return data;
+  }
+}

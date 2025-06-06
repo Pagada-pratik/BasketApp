@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mybasket247/controllers/profile_controller.dart';
 
 import '../../controllers/cart/product_cart_controller.dart';
 import '../../resources/app_colors.dart';
@@ -22,21 +23,31 @@ class CartView extends StatefulWidget {
 class _CartViewState extends State<CartView> {
   ProductCartController productCartController =
       Get.put(ProductCartController());
+  ProfileController profileController =
+      Get.put(ProfileController());
 
   @override
   void initState() {
     super.initState();
-
+    print("Cart View--");
+    print(profileController.userId);
     productCartController.progressDialog = ArsProgressDialog(
       context,
       dismissable: false,
       loadingWidget: const CustomLoading(),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      productCartController.isCartEmpty.value = true;
-      await productCartController.getCartForUserApiResponse(context);
-    });
+    if(profileController.userId.isNotEmpty ) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+        productCartController.isCartEmpty.value = true;
+        await productCartController.getCartForUserApiResponse(context);
+      });
+    } else{
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+        productCartController.isCartEmpty.value = true;
+        await productCartController.getGuestProductDataApiResponse(context);
+      });
+    }
   }
 
   @override
@@ -84,10 +95,14 @@ class _CartViewState extends State<CartView> {
                             const SizedBox(height: AppConstants.defaultPadding),
                             OutlinedButton(
                               onPressed: () {
-                                if (productCartController
-                                    .getCartData.isNotEmpty) {
-                                  productCartController
-                                      .clearCartApiResponse(context);
+                                if(profileController.userId.isNotEmpty) {
+                                  if (productCartController.getCartData
+                                      .isNotEmpty) {
+                                    productCartController.clearCartApiResponse(
+                                        context);
+                                  }
+                                } else{
+                                  productCartController.getGuestProductDataClear(context);
                                 }
                               },
                               child: const Text("Clear cart",

@@ -3,6 +3,7 @@ class ApiUrl {
 
   static var loginEndPoint = "$baseUrl/wp-json/jwt-auth/v1/token";
   static var registerEndPoint = "$baseUrl/wp-json/custom/v1/register";
+  static var forgotEndPoint = "$baseUrl/wp-json/custom/v1/forgotPassword";
   static var getCurrentUserEndPoint = "$baseUrl/wp-json/wp/v2/users/me";
 
   static var getProductsByIdEndPoint = "$baseUrl/wp-json/wc/v3/products";
@@ -41,7 +42,10 @@ class ApiUrl {
   static var clearCartEndPoint = "$baseUrl/wp-json/cocart/v2/cart/clear";
   static var notifyMeEndPoint = "$baseUrl/wp-json/custom/v1/createNotifyMe";
 
+  static var checkUserEmailEndPoint = "$baseUrl/wp-json/custom/v1/checkuser";
   static var createOrderEndPoint = "$baseUrl/wp-json/wc/v3/orders";
+  static var ordersComplaintEndPoint = "$baseUrl/wp-json/custom/v1/getcomplain";
+  static var submitComplaintEndPoint = "$baseUrl/wp-json/custom/v1/submitcomplain";
   static var couponsDiscountEndPoint = "$baseUrl/wp-json/wc/v3/coupons";
 
   static var getUserProfileAndAddressEndPoint =
@@ -49,4 +53,5 @@ class ApiUrl {
   static var updateUserProfileAndAddressEndPoint =
       "$baseUrl/wp-json/wc/v3/customers";
   static var updateUserProfileEndPoint = "$baseUrl/wp-json/wp/v2/users";
+  static var changePasswordEndPoint = "$baseUrl/wp-json/custom/v1/changePassword";
 }

@@ -3,8 +3,10 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mybasket247/controllers/user_controller.dart';
 import '../../components/custom_modal_bottom_sheet.dart';
 import '../../repositories/checkout_repository.dart';
+import '../../routes/routes_name.dart';
 import '../../utils/ars_progress_dialog.dart';
 import '../../utils/message_utils.dart';
 import '../../views/checkout/components/checkout_message_view.dart';
@@ -36,8 +38,22 @@ class OrderPaymentsController extends GetxController {
       };
     }).toList();
 
+    List<String> couponLinesList = <String>[];
+    var couponLines;
+    if(productCartController.couponController.value.text.isNotEmpty) {
+      couponLinesList.add(productCartController.couponController.value.text);
+      couponLines = couponLinesList.map((code) {
+        return {
+          "code": code,
+        };
+      }).toList();
+    }
+
     final Map<String, dynamic> orderData = {
-      "customer_id": profileController.userId.toString(),
+
+      if(profileController.userId.isNotEmpty)
+        "customer_id": profileController.userId.toString(),
+
       "payment_method": paymentMethod.value.toString(),
       "payment_method_title": paymentMethodTitle.value.toString(),
       "set_paid": setPaid,
@@ -52,6 +68,9 @@ class OrderPaymentsController extends GetxController {
         "phone": checkoutFormController.phoneController.value.text,
       },
       "line_items": lineItems,
+
+      if(0 < couponLinesList.length)
+        "coupon_lines": couponLines,
     };
 
     myCheckoutRepo.createOrderApiCall(orderData).then((value) async {
@@ -62,8 +81,12 @@ class OrderPaymentsController extends GetxController {
           isDismissible: false,
           child: const CheckoutMessageView(),
         ).then((_) async {
+          if(profileController.userId.isNotEmpty)
           await productCartController.clearCartApiResponse(context);
+          if(profileController.userId.isNotEmpty)
           await productCartController.getCartForUserApiResponse(context);
+
+          await productCartController.getGuestProductDataClear(context);
           Get.delete<CheckoutFormController>();
           Get.delete<OrderPaymentsController>();
         });
@@ -71,6 +94,66 @@ class OrderPaymentsController extends GetxController {
         customModalBottomSheet(context,
             isDismissible: false, child: const CheckOutMessageFail());
       }
+    }).onError((error, stackTrace) {
+      progressDialog.dismiss();
+      /*MessageUtils.flushBarErrorMessage(
+        "Something went wrong. Please try again later.",
+        context,
+      );*/
+      MessageUtils.flushBarErrorMessage(
+        error.toString(),
+        context,
+      );
+    });
+  }
+
+
+  Future<void> updateOrderApiResponse({
+    required String myOrderId,
+    required BuildContext context,
+  }) async {
+    progressDialog.show();
+
+    final Map<String, dynamic> orderData = {
+      "customer_id": 'processing',
+    };
+
+    myCheckoutRepo.updateOrderApiCall(orderData, myOrderId).then((value) async {
+      progressDialog.dismiss();
+      await ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Order Payment Successful')),
+      );
+      Navigator.pop(context);
+    }).onError((error, stackTrace) {
+      progressDialog.dismiss();
+      MessageUtils.flushBarErrorMessage(
+        "Something went wrong. Please try again later.",
+        context,
+      );
+    });
+  }
+
+  Future<void> checkUserEmailApiResponse({
+    required String email,
+    required BuildContext context,
+  }) async {
+    progressDialog.show();
+
+    myCheckoutRepo.checkUserEmailApiCall(email).then((value) async {
+      progressDialog.dismiss();
+      if(value['status']){
+        MessageUtils.flushBarErrorMessage(
+          "User already exists",
+          context,
+        );
+      } else {
+        UserController().saveGuestEmailIdData(email);
+        Navigator.pushNamed(context, RoutesName.orderPaymentsScreen);
+      }
+       /*await ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(value.)),
+      );
+      Navigator.pop(context);*/
     }).onError((error, stackTrace) {
       progressDialog.dismiss();
       MessageUtils.flushBarErrorMessage(

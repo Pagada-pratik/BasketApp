@@ -291,7 +291,7 @@ class _OrderPaymentsViewState extends State<OrderPaymentsView> {
                   // print('Redirect to: $checkoutUrl');
                   // profileController.launchWebUrl(checkoutUrl);
                   Get.to(() => CheckoutScreen(
-                        orderCode: orderCode,
+                        orderCode: orderCode, myOrderId: "",
                       ));
                 } else {
                   orderPaymentsController.createOrderApiResponse(

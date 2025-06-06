@@ -16,9 +16,10 @@ import 'user_controller.dart';
 
 class ProfileController extends GetxController {
   Future<UserModel> getUserData() => UserController().getUser();
+  UserController userController = Get.put(UserController());
 
-  Future<CurrentUserModel> getCurrentUserData() =>
-      UserController().getCurrentUser();
+  Future<CurrentUserModel> getCurrentUserData() => UserController().getCurrentUser();
+
   final myProfileRepo = ProfileRepository();
   late ArsProgressDialog progressDialog;
   RxString userId = ''.obs;
@@ -78,8 +79,7 @@ class ProfileController extends GetxController {
     }).then((_) async {
       await getCurrentUserData().then((value) async {
         String id = (value.id != null) ? value.id.toString() : '';
-        String description =
-            (value.description != null) ? value.description.toString() : '';
+        String description = (value.description != null) ? value.description.toString() : '';
         userId.value = id;
         userDescription.value = description;
         await getUserProfileAndAddressApiResponse(context, id);

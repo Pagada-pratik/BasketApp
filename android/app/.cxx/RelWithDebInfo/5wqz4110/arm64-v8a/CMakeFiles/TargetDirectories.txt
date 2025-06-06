@@ -1,0 +1,2 @@
+H:/PratikProject/BasketApp/BasketApp/android/app/.cxx/RelWithDebInfo/5wqz4110/arm64-v8a/CMakeFiles/edit_cache.dir
+H:/PratikProject/BasketApp/BasketApp/android/app/.cxx/RelWithDebInfo/5wqz4110/arm64-v8a/CMakeFiles/rebuild_cache.dir
